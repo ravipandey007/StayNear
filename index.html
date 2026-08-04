@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StayNear Bhimtal — Student PG Accommodation System</title>
+    <meta name="description" content="Find and manage Paying Guest (PG) accommodation near Graphic Era Hill University (GEHU) Bhimtal and BIAS Bhimtal, Uttarakhand.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <div class="logo">
+                <span class="logo-icon">🏔️</span>
+                <div class="logo-text">
+                    <span class="brand-name">StayNear</span>
+                    <span class="brand-sub">Bhimtal, Uttarakhand</span>
+                </div>
+            </div>
+            <nav class="nav-links">
+                <a href="#explore" class="active">Explore PGs</a>
+                <a href="#mapSection">📍 Map View</a>
+                <a href="#stats">Bed Tracker</a>
+                <button class="btn btn-primary" id="openAddPgBtn">+ Add New PG</button>
+            </nav>
+
+        </div>
+    </header>
+
+    <!-- Hero Banner -->
+    <section class="hero">
+        <div class="container hero-content">
+            <div class="hero-badge">🎓 GEHU & BIAS Bhimtal Campus Special</div>
+            <h1>Find Ideal Student PGs Near Your College in Bhimtal</h1>
+            <p>Verified student accommodations, transparent bed availability, rent budget filtering, and direct owner contact details.</p>
+
+            <!-- Search & Filter Bar -->
+            <div class="search-box">
+                <div class="search-input-group">
+                    <span class="icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search by College Name or PG Name (e.g. Graphic Era / GEHU)...">
+                </div>
+                <div class="filter-group">
+                    <select id="typeFilter">
+                        <option value="all">All PG Types</option>
+                        <option value="Boys">Boys PG</option>
+                        <option value="Girls">Girls PG</option>
+                        <option value="Co-ed">Co-ed PG</option>
+                    </select>
+                </div>
+                <button class="btn btn-search" id="searchBtn">Search PGs</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats & Filters Section -->
+    <section class="controls-section container" id="stats">
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-icon">🏠</div>
+                <div class="stat-info">
+                    <h3 id="statTotalPgs">0</h3>
+                    <p>Total PGs Registered</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🛏️</div>
+                <div class="stat-info">
+                    <h3 id="statAvailableBeds">0</h3>
+                    <p>Available Beds in Bhimtal</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎓</div>
+                <div class="stat-info">
+                    <h3>GEHU & BIAS</h3>
+                    <p>Target Colleges</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Budget Slider Filter -->
+        <div class="filter-panel">
+            <div class="budget-filter">
+                <label for="budgetRange">Maximum Rent Budget: <strong id="budgetValue">₹10,000</strong>/month</label>
+                <input type="range" id="budgetRange" min="3000" max="15000" step="500" value="10000">
+            </div>
+            <div class="toggle-filter">
+                <label class="switch-label">
+                    <input type="checkbox" id="onlyAvailableCheck">
+                    <span class="slider"></span>
+                    Show Only PGs with Available Beds
+                </label>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Google Maps Section -->
+    <section class="map-section container" id="mapSection">
+        <div class="section-header">
+            <h2>📍 Interactive Bhimtal Campus Map</h2>
+            <p>Locate Graphic Era Hill University (GEHU) Bhimtal Campus & surrounding student PGs</p>
+        </div>
+        <div class="map-container">
+            <iframe 
+                id="googleMapFrame"
+                src="https://maps.google.com/maps?q=Graphic%20Era%20Hill%20University%20Bhimtal%20Campus%20Uttarakhand&t=&z=14&ie=UTF8&iwloc=&output=embed" 
+                width="100%" 
+                height="400" 
+                style="border:0; border-radius: 16px;" 
+                allowfullscreen="" 
+                loading="lazy" 
+                referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+        </div>
+    </section>
+
+    <!-- PG Listings Section -->
+    <section class="listings-section container" id="explore">
+
+        <div class="section-header">
+            <h2>Available Student PGs in Bhimtal</h2>
+            <p id="resultsCount">Showing all accommodations</p>
+        </div>
+
+        <div class="pg-grid" id="pgGrid">
+            <!-- Dynamically populated by app.js -->
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-content">
+            <div class="footer-info">
+                <h3>🏔️ StayNear System</h3>
+                <p>Designed for Students & PG Owners near Graphic Era Hill University (GEHU) Bhimtal Campus, Uttarakhand.</p>
+            </div>
+            <div class="footer-copy">
+                &copy; 2026 StayNear Bhimtal Project. C++ Backend & Web Frontend Edition.
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODAL 1: Add New PG -->
+    <div class="modal" id="addPgModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>➕ Register New PG in Bhimtal</h3>
+                <span class="close-btn" id="closeAddPgModal">&times;</span>
+            </div>
+            <form id="addPgForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="pgName">PG Name *</label>
+                        <input type="text" id="pgName" required placeholder="e.g. Himalayan Heights PG">
+                    </div>
+                    <div class="form-group">
+                        <label for="collegeName">Nearby College *</label>
+                        <input type="text" id="collegeName" required value="Graphic Era Hill University Bhimtal">
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Location in Bhimtal *</label>
+                        <input type="text" id="location" required placeholder="e.g. Bhowali Road, June Estate">
+                    </div>
+                    <div class="form-group">
+                        <label for="pgType">PG Type *</label>
+                        <select id="pgType" required>
+                            <option value="Boys">Boys PG</option>
+                            <option value="Girls">Girls PG</option>
+                            <option value="Co-ed">Co-ed PG</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="rent">Monthly Rent per Bed (₹) *</label>
+                        <input type="number" id="rent" required placeholder="e.g. 5500" min="1000" max="30000">
+                    </div>
+                    <div class="form-group">
+                        <label for="rating">Rating (0.0 - 5.0) *</label>
+                        <input type="number" id="rating" step="0.1" min="1" max="5" value="4.5" required>
+                    </div>
+                </div>
+
+                <div class="form-section-title">Owner Information (Base Person Class)</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="ownerName">Owner Name *</label>
+                        <input type="text" id="ownerName" required placeholder="e.g. Rajesh Sharma">
+                    </div>
+                    <div class="form-group">
+                        <label for="ownerPhone">Phone Number *</label>
+                        <input type="text" id="ownerPhone" required placeholder="e.g. 9876543210">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="ownerEmail">Owner Email *</label>
+                        <input type="email" id="ownerEmail" required placeholder="e.g. rajesh@staynear.com">
+                    </div>
+                </div>
+
+                <div class="form-section-title">Room & Bed Details</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="totalRooms">Total Rooms *</label>
+                        <input type="number" id="totalRooms" min="1" max="20" value="2" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bedsPerRoom">Beds per Room *</label>
+                        <input type="number" id="bedsPerRoom" min="1" max="6" value="2" required>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelAddPgBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save & Add PG</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: View PG Details & Rooms -->
+    <div class="modal" id="viewPgModal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3 id="viewPgTitle">PG Details</h3>
+                <span class="close-btn" id="closeViewPgModal">&times;</span>
+            </div>
+            <div class="modal-body" id="viewPgBody">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main JavaScript App -->
+    <script src="app.js"></script>
+</body>
+</html>
