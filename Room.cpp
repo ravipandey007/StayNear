@@ -1,22 +1,22 @@
 #include "Room.h"
 
+// Default constructor
 Room::Room()
 {
     roomNumber = 0;
     totalBeds = 0;
     occupiedBeds = 0;
-    students = nullptr;
 }
 
-Room::~Room()
+// Parameterized constructor: starts with 0 occupied beds
+Room::Room(int roomNumber, int totalBeds)
 {
-    // Clean up dynamic memory pointer
-    if (students != nullptr)
-    {
-        delete[] students;
-    }
+    this->roomNumber = roomNumber;
+    this->totalBeds = totalBeds;
+    this->occupiedBeds = 0;
 }
 
+// Reads room information and its student details from input
 void Room::input()
 {
     cout << "\nEnter Room Number: ";
@@ -28,39 +28,39 @@ void Room::input()
     cout << "Enter Occupied Beds: ";
     cin >> occupiedBeds;
 
+    // Validation: Occupied beds cannot exceed total capacity
     if (occupiedBeds > totalBeds)
     {
-        cout << "Occupied beds cannot exceed total beds. Setting to " << totalBeds << endl;
+        cout << "[Note] Occupied beds cannot exceed total capacity. Setting occupied beds to " 
+             << totalBeds << ".\n";
         occupiedBeds = totalBeds;
     }
 
-    // Dynamic memory allocation using pointers
-    if (occupiedBeds > 0)
+    students.clear();
+    for (int i = 0; i < occupiedBeds; i++)
     {
-        students = new Student[occupiedBeds];
-        for (int i = 0; i < occupiedBeds; i++)
-        {
-            cout << "\nStudent " << (i + 1) << " in Room #" << roomNumber << ":\n";
-            students[i].input();
-        }
+        cout << "\n--- Student " << (i + 1) << " in Room #" << roomNumber << " ---\n";
+        Student s;
+        s.input();
+        students.push_back(s);
     }
 }
 
+// Displays room status and lists all students living inside
 void Room::display() const
 {
-    cout << "\n------------------------------------";
-    cout << "\nRoom #" << roomNumber 
-         << " | Total Beds: " << totalBeds 
-         << " | Occupied: " << occupiedBeds 
+    cout << "\n  Room #" << roomNumber
+         << " | Total Beds: " << totalBeds
+         << " | Occupied: " << occupiedBeds
          << " | Available: " << getAvailableBeds() << endl;
 
-    for (int i = 0; i < occupiedBeds; i++)
+    for (size_t i = 0; i < students.size(); i++)
     {
         students[i].display();
     }
-    cout << "------------------------------------\n";
 }
 
+// Getters
 int Room::getRoomNumber() const
 {
     return roomNumber;
@@ -79,4 +79,28 @@ int Room::getOccupiedBeds() const
 int Room::getAvailableBeds() const
 {
     return totalBeds - occupiedBeds;
+}
+
+const vector<Student>& Room::getStudents() const
+{
+    return students;
+}
+
+// Set room details directly
+void Room::setRoomDetails(int rNum, int tBeds)
+{
+    roomNumber = rNum;
+    totalBeds = tBeds;
+}
+
+// Adds a student to this room if a bed is free
+bool Room::addStudent(const Student &s)
+{
+    if (occupiedBeds >= totalBeds)
+    {
+        return false; // Room is completely full
+    }
+    students.push_back(s);
+    occupiedBeds++;
+    return true;
 }
