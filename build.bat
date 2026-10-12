@@ -1,37 +1,25 @@
 @echo off
 setlocal
 
-echo =======================================================
-echo   Building StayNear (Modular & Standalone Targets)
-echo =======================================================
+if not defined QT_DIR set "QT_DIR=C:\Qt\6.11.1\mingw_64"
+if exist "C:\Qt\Tools\CMake_64\bin" set "PATH=C:\Qt\Tools\CMake_64\bin;%PATH%"
+if exist "C:\Qt\Tools\Ninja" set "PATH=C:\Qt\Tools\Ninja;%PATH%"
+if exist "C:\Qt\Tools\mingw1310_64\bin" set "PATH=C:\Qt\Tools\mingw1310_64\bin;%PATH%"
 
-set "CMAKE_BIN=C:\Qt\Tools\CMake_64\bin\cmake.exe"
-set "NINJA_DIR=C:\Qt\Tools\Ninja"
-set "MINGW_DIR=C:\Qt\Tools\mingw1310_64\bin"
-
-set "PATH=%MINGW_DIR%;%NINJA_DIR%;%PATH%"
-
-if not exist build mkdir build
-cd build
-
-echo Configuring with CMake...
-"%CMAKE_BIN%" -G "Ninja" -DCMAKE_BUILD_TYPE=Release ..
+cd /d "%~dp0"
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%QT_DIR%"
 if errorlevel 1 (
     echo [ERROR] CMake configuration failed.
     exit /b 1
 )
 
-echo Building executables with Ninja...
-"%CMAKE_BIN%" --build . --config Release
+cmake --build build --config Release
 if errorlevel 1 (
     echo [ERROR] Build failed.
     exit /b 1
 )
 
-echo =======================================================
-echo   Build Successful!
-echo   Modular CLI:     build\StayNear_CLI.exe
-echo   Standalone:      build\StayNear_Simple.exe
-echo =======================================================
+echo Build successful.
+echo Qt desktop app: build\StayNear.exe
 
 endlocal
