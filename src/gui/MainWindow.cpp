@@ -13,8 +13,8 @@
 #include <QLocale>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QSlider>
 #include <QStringList>
-#include <QSpinBox>
 #include <QTableWidget>
 #include <QTableWidgetItem>
 #include <QVBoxLayout>
@@ -30,6 +30,13 @@ namespace
 QString toQString(const std::string &value)
 {
     return QString::fromStdString(value);
+}
+
+QString formattedRent(int rent)
+{
+    return QString("Rs. %1").arg(
+        QLocale(QLocale::English, QLocale::India).toString(rent)
+    );
 }
 
 QFrame *createMetricCard(const QString &caption, QLabel *&valueLabel)
@@ -200,6 +207,7 @@ void MainWindow::createLayout()
     searchInput_ = new QLineEdit;
     searchInput_->setPlaceholderText("Search PG, college, or location");
     searchInput_->setClearButtonEnabled(true);
+    searchInput_->setMinimumWidth(140);
     filters->addWidget(searchInput_, 1);
 
     typeFilter_ = new QComboBox;
@@ -207,16 +215,36 @@ void MainWindow::createLayout()
     typeFilter_->setMinimumWidth(130);
     filters->addWidget(typeFilter_);
 
-    budgetFilter_ = new QSpinBox;
-    budgetFilter_->setRange(0, 100000);
-    budgetFilter_->setValue(10000);
-    budgetFilter_->setPrefix("Max rent Rs. ");
-    budgetFilter_->setMinimumWidth(180);
-    filters->addWidget(budgetFilter_);
-
     availableFilter_ = new QCheckBox("Beds available");
     filters->addWidget(availableFilter_);
     filterLayout->addLayout(filters);
+
+    auto *budgetPanel = new QWidget(filterPanel);
+    auto *budgetLayout = new QVBoxLayout(budgetPanel);
+    budgetLayout->setContentsMargins(0, 2, 0, 0);
+    budgetLayout->setSpacing(2);
+
+    auto *budgetHeader = new QHBoxLayout;
+    auto *budgetCaption = new QLabel("MAX MONTHLY RENT PER BED");
+    budgetCaption->setObjectName("sliderCaption");
+    budgetHeader->addWidget(budgetCaption);
+    budgetHeader->addStretch();
+    budgetValueLabel_ = new QLabel(formattedRent(10000));
+    budgetValueLabel_->setObjectName("sliderValue");
+    budgetHeader->addWidget(budgetValueLabel_);
+    budgetLayout->addLayout(budgetHeader);
+
+    budgetFilter_ = new QSlider(Qt::Horizontal, budgetPanel);
+    budgetFilter_->setRange(0, 100000);
+    budgetFilter_->setValue(10000);
+    budgetFilter_->setSingleStep(500);
+    budgetFilter_->setPageStep(5000);
+    budgetFilter_->setAccessibleName("Maximum monthly rent per bed");
+    budgetFilter_->setAccessibleDescription(
+        "Set the maximum rent per bed, from zero to one hundred thousand rupees."
+    );
+    budgetLayout->addWidget(budgetFilter_);
+    filterLayout->addWidget(budgetPanel);
     layout->addWidget(filterPanel);
 
     auto *resultsHeader = new QHBoxLayout;
@@ -281,7 +309,10 @@ void MainWindow::createLayout()
 
     connect(searchInput_, &QLineEdit::textChanged, this, [this] { refreshPgs(); });
     connect(typeFilter_, &QComboBox::currentTextChanged, this, [this] { refreshPgs(); });
-    connect(budgetFilter_, &QSpinBox::valueChanged, this, [this] { refreshPgs(); });
+    connect(budgetFilter_, &QSlider::valueChanged, this, [this](int value) {
+        budgetValueLabel_->setText(formattedRent(value));
+        refreshPgs();
+    });
     connect(availableFilter_, &QCheckBox::toggled, this, [this] { refreshPgs(); });
     connect(clearButton, &QPushButton::clicked, this, [this] { clearFilters(); });
     connect(registerButton, &QPushButton::clicked, this, [this] { addPg(); });
@@ -336,13 +367,12 @@ void MainWindow::addPgRow(const PG &pg, int index)
     const int row = pgTable_->rowCount();
     pgTable_->insertRow(row);
 
-    const QLocale india(QLocale::English, QLocale::India);
     const QStringList values = {
         toQString(pg.getPGName()),
         toQString(pg.getCollegeName()),
         toQString(pg.getLocation()),
         toQString(pg.getPGType()),
-        QString("Rs. %1").arg(india.toString(pg.getRent())),
+        formattedRent(pg.getRent()),
         QString("%1 / 5").arg(pg.getRating(), 0, 'f', 1),
         QString::number(pg.getTotalRooms()),
         QString("%1 available").arg(pg.getAvailableBedsCount())

@@ -90,6 +90,16 @@ int main(int argc, char *argv[])
             font-size: 9pt;
             font-weight: 600;
         }
+        QLabel#sliderCaption {
+            color: #64748b;
+            font-size: 8pt;
+            font-weight: 600;
+        }
+        QLabel#sliderValue {
+            color: #1d4ed8;
+            font-size: 10pt;
+            font-weight: 700;
+        }
         QLabel#emptyState {
             padding: 24px;
             color: #64748b;
@@ -125,6 +135,25 @@ int main(int argc, char *argv[])
             background: #2563eb;
             border: 1px solid #2563eb;
             border-radius: 4px;
+        }
+        QSlider::groove:horizontal {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+        }
+        QSlider::sub-page:horizontal {
+            background: #3b82f6;
+            border-radius: 3px;
+        }
+        QSlider::handle:horizontal {
+            width: 18px;
+            margin: -7px 0;
+            background: #ffffff;
+            border: 2px solid #2563eb;
+            border-radius: 10px;
+        }
+        QSlider::handle:horizontal:hover {
+            background: #dbeafe;
         }
         QPushButton {
             min-height: 22px;
