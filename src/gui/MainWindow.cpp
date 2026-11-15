@@ -13,8 +13,8 @@
 #include <QLocale>
 #include <QMessageBox>
 #include <QPushButton>
-#include <QSlider>
 #include <QStringList>
+#include <QSpinBox>
 #include <QTableWidget>
 #include <QTableWidgetItem>
 #include <QVBoxLayout>
@@ -219,30 +219,26 @@ void MainWindow::createLayout()
     filters->addWidget(availableFilter_);
     filterLayout->addLayout(filters);
 
-    auto *budgetPanel = new QWidget(filterPanel);
-    auto *budgetLayout = new QVBoxLayout(budgetPanel);
-    budgetLayout->setContentsMargins(0, 2, 0, 0);
-    budgetLayout->setSpacing(2);
+    auto *budgetPanel = new QFrame(filterPanel);
+    budgetPanel->setObjectName("budgetInputFrame");
+    auto *budgetLayout = new QHBoxLayout(budgetPanel);
+    budgetLayout->setContentsMargins(12, 8, 12, 8);
+    budgetLayout->setSpacing(12);
 
-    auto *budgetHeader = new QHBoxLayout;
-    auto *budgetCaption = new QLabel("MAX MONTHLY RENT PER BED");
-    budgetCaption->setObjectName("sliderCaption");
-    budgetHeader->addWidget(budgetCaption);
-    budgetHeader->addStretch();
-    budgetValueLabel_ = new QLabel(formattedRent(10000));
-    budgetValueLabel_->setObjectName("sliderValue");
-    budgetHeader->addWidget(budgetValueLabel_);
-    budgetLayout->addLayout(budgetHeader);
+    auto *budgetCaption = new QLabel("Maximum monthly rent per bed");
+    budgetCaption->setObjectName("budgetCaption");
+    budgetLayout->addWidget(budgetCaption);
+    budgetLayout->addStretch();
 
-    budgetFilter_ = new QSlider(Qt::Horizontal, budgetPanel);
+    budgetFilter_ = new QSpinBox(budgetPanel);
+    budgetFilter_->setObjectName("budgetInput");
     budgetFilter_->setRange(0, 100000);
     budgetFilter_->setValue(10000);
-    budgetFilter_->setSingleStep(500);
-    budgetFilter_->setPageStep(5000);
+    budgetFilter_->setPrefix("Rs. ");
+    budgetFilter_->setGroupSeparatorShown(true);
+    budgetFilter_->setButtonSymbols(QAbstractSpinBox::NoButtons);
+    budgetFilter_->setMinimumWidth(150);
     budgetFilter_->setAccessibleName("Maximum monthly rent per bed");
-    budgetFilter_->setAccessibleDescription(
-        "Set the maximum rent per bed, from zero to one hundred thousand rupees."
-    );
     budgetLayout->addWidget(budgetFilter_);
     filterLayout->addWidget(budgetPanel);
     layout->addWidget(filterPanel);
@@ -309,8 +305,7 @@ void MainWindow::createLayout()
 
     connect(searchInput_, &QLineEdit::textChanged, this, [this] { refreshPgs(); });
     connect(typeFilter_, &QComboBox::currentTextChanged, this, [this] { refreshPgs(); });
-    connect(budgetFilter_, &QSlider::valueChanged, this, [this](int value) {
-        budgetValueLabel_->setText(formattedRent(value));
+    connect(budgetFilter_, &QSpinBox::valueChanged, this, [this](int) {
         refreshPgs();
     });
     connect(availableFilter_, &QCheckBox::toggled, this, [this] { refreshPgs(); });

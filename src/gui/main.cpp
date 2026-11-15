@@ -90,16 +90,6 @@ int main(int argc, char *argv[])
             font-size: 9pt;
             font-weight: 600;
         }
-        QLabel#sliderCaption {
-            color: #64748b;
-            font-size: 8pt;
-            font-weight: 600;
-        }
-        QLabel#sliderValue {
-            color: #1d4ed8;
-            font-size: 10pt;
-            font-weight: 700;
-        }
         QLabel#emptyState {
             padding: 24px;
             color: #64748b;
@@ -107,6 +97,16 @@ int main(int argc, char *argv[])
             border: 1px dashed #cbd5e1;
             border-radius: 12px;
             font-size: 11pt;
+        }
+        QLabel#budgetCaption {
+            color: #475569;
+            font-size: 9pt;
+            font-weight: 600;
+        }
+        QFrame#budgetInputFrame {
+            background: #f8fafc;
+            border: 1px solid #dbeafe;
+            border-radius: 10px;
         }
         QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox {
             min-height: 22px;
@@ -118,6 +118,19 @@ int main(int argc, char *argv[])
         }
         QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QDoubleSpinBox:focus {
             border: 1px solid #3b82f6;
+        }
+        QSpinBox#budgetInput {
+            min-width: 150px;
+            color: #1e3a8a;
+            background: #ffffff;
+            border: 1px solid #93c5fd;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 11pt;
+            font-weight: 600;
+        }
+        QSpinBox#budgetInput:focus {
+            border: 2px solid #2563eb;
         }
         QCheckBox {
             spacing: 8px;
@@ -135,25 +148,6 @@ int main(int argc, char *argv[])
             background: #2563eb;
             border: 1px solid #2563eb;
             border-radius: 4px;
-        }
-        QSlider::groove:horizontal {
-            height: 6px;
-            background: #e2e8f0;
-            border-radius: 3px;
-        }
-        QSlider::sub-page:horizontal {
-            background: #3b82f6;
-            border-radius: 3px;
-        }
-        QSlider::handle:horizontal {
-            width: 18px;
-            margin: -7px 0;
-            background: #ffffff;
-            border: 2px solid #2563eb;
-            border-radius: 10px;
-        }
-        QSlider::handle:horizontal:hover {
-            background: #dbeafe;
         }
         QPushButton {
             min-height: 22px;

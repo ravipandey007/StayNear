@@ -12,7 +12,7 @@ class QComboBox;
 class QLabel;
 class QLineEdit;
 class QPushButton;
-class QSlider;
+class QSpinBox;
 class QTableWidget;
 
 // Main screen: search PGs, filter the list, and open the two dialogs.
@@ -37,8 +37,7 @@ private:
     std::vector<PG> pgs_;
     QLineEdit *searchInput_ = nullptr;
     QComboBox *typeFilter_ = nullptr;
-    QSlider *budgetFilter_ = nullptr;
-    QLabel *budgetValueLabel_ = nullptr;
+    QSpinBox *budgetFilter_ = nullptr;
     QCheckBox *availableFilter_ = nullptr;
     QTableWidget *pgTable_ = nullptr;
     QLabel *listingCount_ = nullptr;
