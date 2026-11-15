@@ -1,13 +1,16 @@
 #include "MainWindow.h"
 
 #include <QAbstractItemView>
+#include <QColor>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QFrame>
+#include <QFont>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
 #include <QLineEdit>
+#include <QLocale>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QStringList>
@@ -27,6 +30,25 @@ namespace
 QString toQString(const std::string &value)
 {
     return QString::fromStdString(value);
+}
+
+QFrame *createMetricCard(const QString &caption, QLabel *&valueLabel)
+{
+    auto *card = new QFrame;
+    card->setObjectName("metricCard");
+
+    auto *cardLayout = new QVBoxLayout(card);
+    cardLayout->setContentsMargins(18, 14, 18, 14);
+    cardLayout->setSpacing(5);
+
+    valueLabel = new QLabel("0", card);
+    valueLabel->setObjectName("metricValue");
+    cardLayout->addWidget(valueLabel);
+
+    auto *captionLabel = new QLabel(caption, card);
+    captionLabel->setObjectName("metricCaption");
+    cardLayout->addWidget(captionLabel);
+    return card;
 }
 }
 
@@ -102,164 +124,158 @@ void MainWindow::connectToMysql()
 void MainWindow::createLayout()
 {
     auto *centralWidget = new QWidget(this);
-    centralWidget->setStyleSheet(R"(
-        QWidget {
-            background: #f4f7fb;
-            color: #1e293b;
-            font-family: "Segoe UI";
-            font-size: 10pt;
-        }
-        QLabel#pageTitle {
-            color: #0f172a;
-            font-size: 25pt;
-            font-weight: 700;
-        }
-        QLabel#pageSubtitle, QLabel#resultsLabel {
-            color: #64748b;
-        }
-        QLabel#summaryLabel {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 14px 18px;
-            color: #334155;
-            font-size: 11pt;
-            font-weight: 600;
-        }
-        QFrame#filtersCard {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-        }
-        QLineEdit, QComboBox, QSpinBox {
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 7px;
-            padding: 8px;
-            min-height: 20px;
-            selection-background-color: #bfdbfe;
-        }
-        QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
-            border: 1px solid #3b82f6;
-        }
-        QCheckBox {
-            spacing: 8px;
-        }
-        QPushButton {
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 7px;
-            padding: 9px 16px;
-            font-weight: 600;
-        }
-        QPushButton:hover {
-            background: #eff6ff;
-            border-color: #93c5fd;
-        }
-        QPushButton#primaryButton {
-            background: #2563eb;
-            border-color: #2563eb;
-            color: #ffffff;
-        }
-        QPushButton#primaryButton:hover {
-            background: #1d4ed8;
-            border-color: #1d4ed8;
-        }
-        QTableWidget {
-            background: #ffffff;
-            alternate-background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            gridline-color: #eef2f7;
-            selection-background-color: #dbeafe;
-            selection-color: #1e3a8a;
-            outline: 0;
-        }
-        QHeaderView::section {
-            background: #f1f5f9;
-            border: none;
-            border-bottom: 1px solid #e2e8f0;
-            color: #475569;
-            font-weight: 600;
-            padding: 10px 8px;
-        }
-        QTableWidget::item {
-            border-bottom: 1px solid #f1f5f9;
-            padding: 6px;
-        }
-    )");
-
     auto *layout = new QVBoxLayout(centralWidget);
-    layout->setContentsMargins(26, 22, 26, 22);
-    layout->setSpacing(14);
+    layout->setContentsMargins(30, 22, 30, 24);
+    layout->setSpacing(16);
 
-    auto *title = new QLabel("StayNear - Student PG Accommodation");
-    title->setObjectName("pageTitle");
-    layout->addWidget(title);
+    auto *header = new QHBoxLayout;
+    header->setSpacing(12);
+
+    auto *brandMark = new QLabel("SN");
+    brandMark->setObjectName("brandMark");
+    brandMark->setAlignment(Qt::AlignCenter);
+    brandMark->setFixedSize(46, 46);
+    header->addWidget(brandMark);
+
+    auto *brandCopy = new QVBoxLayout;
+    brandCopy->setSpacing(0);
+    auto *brandName = new QLabel("StayNear");
+    brandName->setObjectName("brandName");
+    auto *brandTagline = new QLabel("STUDENT LIVING, MADE SIMPLE");
+    brandTagline->setObjectName("brandTagline");
+    brandCopy->addWidget(brandName);
+    brandCopy->addWidget(brandTagline);
+    header->addLayout(brandCopy);
+    header->addStretch();
+
+    connectionStatus_ = new QLabel;
+    connectionStatus_->setObjectName("connectionStatus");
+    connectionStatus_->setText(databaseReady_ ? "Connected to MySQL" : "Using sample data");
+    connectionStatus_->setProperty("offline", !databaseReady_);
+    header->addWidget(connectionStatus_);
+
+    auto *registerButton = new QPushButton("Register a PG");
+    registerButton->setObjectName("primaryButton");
+    registerButton->setMinimumHeight(42);
+    header->addWidget(registerButton);
+    layout->addLayout(header);
+
+    auto *pageTitle = new QLabel("Find a place that feels like home");
+    pageTitle->setObjectName("pageTitle");
+    layout->addWidget(pageTitle);
 
     auto *subtitle = new QLabel(
-        "Browse PGs near GEHU and BIAS in Bhimtal, or register a new PG."
+        "Explore student-friendly stays near GEHU and BIAS in Bhimtal."
     );
     subtitle->setObjectName("pageSubtitle");
     layout->addWidget(subtitle);
 
-    summaryLabel_ = new QLabel;
-    summaryLabel_->setObjectName("summaryLabel");
-    layout->addWidget(summaryLabel_);
+    auto *metrics = new QHBoxLayout;
+    metrics->setSpacing(12);
+    metrics->addWidget(createMetricCard("LISTED PROPERTIES", listingCount_));
+    metrics->addWidget(createMetricCard("TOTAL BEDS", bedCount_));
+    metrics->addWidget(createMetricCard("OCCUPIED BEDS", occupiedCount_));
+    metrics->addWidget(createMetricCard("BEDS AVAILABLE", availableCount_));
+    layout->addLayout(metrics);
 
-    auto *filtersCard = new QFrame;
-    filtersCard->setObjectName("filtersCard");
-    auto *filters = new QHBoxLayout(filtersCard);
-    filters->setContentsMargins(14, 12, 14, 12);
+    auto *filterPanel = new QFrame;
+    filterPanel->setObjectName("filterPanel");
+    auto *filterLayout = new QVBoxLayout(filterPanel);
+    filterLayout->setContentsMargins(18, 14, 18, 16);
+    filterLayout->setSpacing(10);
+
+    auto *filterHeader = new QHBoxLayout;
+    auto *filterTitle = new QLabel("Search and refine");
+    filterTitle->setObjectName("sectionTitle");
+    filterHeader->addWidget(filterTitle);
+    filterHeader->addStretch();
+
+    auto *clearButton = new QPushButton("Clear filters");
+    clearButton->setObjectName("textButton");
+    filterHeader->addWidget(clearButton);
+    filterLayout->addLayout(filterHeader);
+
+    auto *filters = new QHBoxLayout;
     filters->setSpacing(10);
-
     searchInput_ = new QLineEdit;
     searchInput_->setPlaceholderText("Search PG, college, or location");
+    searchInput_->setClearButtonEnabled(true);
     filters->addWidget(searchInput_, 1);
 
     typeFilter_ = new QComboBox;
     typeFilter_->addItems({"All types", "Boys", "Girls", "Co-Ed"});
+    typeFilter_->setMinimumWidth(130);
     filters->addWidget(typeFilter_);
 
     budgetFilter_ = new QSpinBox;
     budgetFilter_->setRange(0, 100000);
     budgetFilter_->setValue(10000);
-    budgetFilter_->setPrefix("Max rent: Rs. ");
+    budgetFilter_->setPrefix("Max rent Rs. ");
+    budgetFilter_->setMinimumWidth(180);
     filters->addWidget(budgetFilter_);
 
-    availableFilter_ = new QCheckBox("Available beds only");
+    availableFilter_ = new QCheckBox("Beds available");
     filters->addWidget(availableFilter_);
-    layout->addWidget(filtersCard);
+    filterLayout->addLayout(filters);
+    layout->addWidget(filterPanel);
+
+    auto *resultsHeader = new QHBoxLayout;
+    auto *resultsTitle = new QLabel("Places to stay");
+    resultsTitle->setObjectName("sectionTitle");
+    resultsHeader->addWidget(resultsTitle);
+    resultsHeader->addStretch();
+    resultsLabel_ = new QLabel;
+    resultsLabel_->setObjectName("resultCount");
+    resultsHeader->addWidget(resultsLabel_);
+    layout->addLayout(resultsHeader);
 
     pgTable_ = new QTableWidget(0, 8);
+    pgTable_->setObjectName("pgTable");
     pgTable_->setHorizontalHeaderLabels({
-        "PG name", "College", "Location", "Type",
-        "Rent / month", "Rating", "Rooms", "Beds available"
+        "PG name", "Nearby college", "Location", "Type",
+        "Rent / bed", "Rating", "Rooms", "Beds available"
     });
     pgTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
     pgTable_->setSelectionMode(QAbstractItemView::SingleSelection);
     pgTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     pgTable_->setAlternatingRowColors(true);
     pgTable_->setShowGrid(false);
-    pgTable_->verticalHeader()->setDefaultSectionSize(42);
+    pgTable_->setWordWrap(false);
+    pgTable_->setAccessibleName("Available PG listings");
     pgTable_->verticalHeader()->hide();
+    pgTable_->verticalHeader()->setDefaultSectionSize(50);
     pgTable_->horizontalHeader()->setMinimumHeight(42);
     pgTable_->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     pgTable_->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    pgTable_->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+
+    emptyState_ = new QLabel(
+        "No stays match these filters.\nTry another search or clear your filters."
+    );
+    emptyState_->setObjectName("emptyState");
+    emptyState_->setAlignment(Qt::AlignCenter);
+    emptyState_->setWordWrap(true);
+    emptyState_->setMinimumHeight(190);
+
     layout->addWidget(pgTable_, 1);
+    layout->addWidget(emptyState_, 1);
 
-    auto *buttons = new QHBoxLayout;
-    resultsLabel_ = new QLabel;
-    resultsLabel_->setObjectName("resultsLabel");
-    buttons->addWidget(resultsLabel_);
-    buttons->addStretch();
+    auto *footer = new QHBoxLayout;
+    auto *helperText = new QLabel(
+        databaseReady_
+            ? "Listings are saved to your MySQL database."
+            : "Sample listings are temporary and will reset when you close the app."
+    );
+    helperText->setObjectName("helperText");
+    footer->addWidget(helperText);
+    footer->addStretch();
 
-    auto *addButton = new QPushButton("Register PG");
-    addButton->setObjectName("primaryButton");
-    auto *detailsButton = new QPushButton("View rooms");
-    buttons->addWidget(addButton);
-    buttons->addWidget(detailsButton);
-    layout->addLayout(buttons);
+    detailsButton_ = new QPushButton("View rooms");
+    detailsButton_->setObjectName("secondaryButton");
+    detailsButton_->setEnabled(false);
+    detailsButton_->setMinimumHeight(40);
+    footer->addWidget(detailsButton_);
+    layout->addLayout(footer);
 
     setCentralWidget(centralWidget);
 
@@ -267,10 +283,14 @@ void MainWindow::createLayout()
     connect(typeFilter_, &QComboBox::currentTextChanged, this, [this] { refreshPgs(); });
     connect(budgetFilter_, &QSpinBox::valueChanged, this, [this] { refreshPgs(); });
     connect(availableFilter_, &QCheckBox::toggled, this, [this] { refreshPgs(); });
-    connect(addButton, &QPushButton::clicked, this, [this] { addPg(); });
-    connect(detailsButton, &QPushButton::clicked, this, [this] { showSelectedPg(); });
+    connect(clearButton, &QPushButton::clicked, this, [this] { clearFilters(); });
+    connect(registerButton, &QPushButton::clicked, this, [this] { addPg(); });
+    connect(detailsButton_, &QPushButton::clicked, this, [this] { showSelectedPg(); });
     connect(pgTable_, &QTableWidget::cellDoubleClicked, this,
         [this] { showSelectedPg(); });
+    connect(pgTable_, &QTableWidget::itemSelectionChanged, this, [this] {
+        detailsButton_->setEnabled(selectedPgIndex() >= 0);
+    });
 }
 
 void MainWindow::refreshPgs()
@@ -302,9 +322,12 @@ void MainWindow::refreshPgs()
         ++visibleCount;
     }
 
-    resultsLabel_->setText(visibleCount == 0
-        ? QStringLiteral("No PGs match these filters")
-        : QString("Showing %1 of %2 PGs").arg(visibleCount).arg(pgs_.size()));
+    pgTable_->setVisible(visibleCount > 0);
+    emptyState_->setVisible(visibleCount == 0);
+    detailsButton_->setEnabled(false);
+    resultsLabel_->setText(
+        QString("%1 of %2 listings").arg(visibleCount).arg(pgs_.size())
+    );
     updateSummary();
 }
 
@@ -313,15 +336,16 @@ void MainWindow::addPgRow(const PG &pg, int index)
     const int row = pgTable_->rowCount();
     pgTable_->insertRow(row);
 
+    const QLocale india(QLocale::English, QLocale::India);
     const QStringList values = {
         toQString(pg.getPGName()),
         toQString(pg.getCollegeName()),
         toQString(pg.getLocation()),
         toQString(pg.getPGType()),
-        QString::number(pg.getRent()),
-        QString::number(pg.getRating(), 'f', 1),
+        QString("Rs. %1").arg(india.toString(pg.getRent())),
+        QString("%1 / 5").arg(pg.getRating(), 0, 'f', 1),
         QString::number(pg.getTotalRooms()),
-        QString::number(pg.getAvailableBedsCount())
+        QString("%1 available").arg(pg.getAvailableBedsCount())
     };
 
     for (int column = 0; column < values.size(); ++column)
@@ -330,6 +354,19 @@ void MainWindow::addPgRow(const PG &pg, int index)
         if (column == 0)
         {
             item->setData(Qt::UserRole, index);
+            QFont nameFont = item->font();
+            nameFont.setBold(true);
+            item->setFont(nameFont);
+        }
+        if (column >= 4)
+        {
+            item->setTextAlignment(Qt::AlignCenter);
+        }
+        if (column == 7)
+        {
+            item->setForeground(
+                pg.getAvailableBedsCount() > 0 ? QColor("#15803d") : QColor("#64748b")
+            );
         }
         pgTable_->setItem(row, column, item);
     }
@@ -348,20 +385,25 @@ void MainWindow::updateSummary()
         availableBeds += pg.getAvailableBedsCount();
     }
 
-    summaryLabel_->setText(
-        QString("PGs: %1    Total beds: %2    Occupied: %3    Available: %4")
-            .arg(pgs_.size())
-            .arg(totalBeds)
-            .arg(occupiedBeds)
-            .arg(availableBeds)
-    );
+    listingCount_->setText(QString::number(pgs_.size()));
+    bedCount_->setText(QString::number(totalBeds));
+    occupiedCount_->setText(QString::number(occupiedBeds));
+    availableCount_->setText(QString::number(availableBeds));
+}
+
+void MainWindow::clearFilters()
+{
+    searchInput_->clear();
+    typeFilter_->setCurrentIndex(0);
+    budgetFilter_->setValue(10000);
+    availableFilter_->setChecked(false);
 }
 
 int MainWindow::selectedPgIndex() const
 {
     // The first table cell stores which PG belongs to the selected row.
     const int row = pgTable_->currentRow();
-    if (row < 0)
+    if (row < 0 || pgTable_->item(row, 0) == nullptr)
     {
         return -1;
     }

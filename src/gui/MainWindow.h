@@ -11,6 +11,7 @@ class QCheckBox;
 class QComboBox;
 class QLabel;
 class QLineEdit;
+class QPushButton;
 class QSpinBox;
 class QTableWidget;
 
@@ -26,6 +27,7 @@ private:
     void refreshPgs();
     void addPgRow(const PG &pg, int index);
     void updateSummary();
+    void clearFilters();
     void addPg();
     void showSelectedPg();
     int selectedPgIndex() const;
@@ -38,8 +40,14 @@ private:
     QSpinBox *budgetFilter_ = nullptr;
     QCheckBox *availableFilter_ = nullptr;
     QTableWidget *pgTable_ = nullptr;
-    QLabel *summaryLabel_ = nullptr;
+    QLabel *listingCount_ = nullptr;
+    QLabel *bedCount_ = nullptr;
+    QLabel *occupiedCount_ = nullptr;
+    QLabel *availableCount_ = nullptr;
+    QLabel *connectionStatus_ = nullptr;
+    QLabel *emptyState_ = nullptr;
     QLabel *resultsLabel_ = nullptr;
+    QPushButton *detailsButton_ = nullptr;
 };
 
 #endif

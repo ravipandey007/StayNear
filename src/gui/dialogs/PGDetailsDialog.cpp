@@ -1,6 +1,9 @@
 #include "PGDetailsDialog.h"
 
 #include <QDialogButtonBox>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QPushButton>
 #include <QTextEdit>
 #include <QVBoxLayout>
 
@@ -31,17 +34,19 @@ PGDetailsDialog::PGDetailsDialog(const PG &pg, QWidget *parent)
     : QDialog(parent)
 {
     setWindowTitle(toQString(pg.getPGName()));
-    resize(500, 450);
+    resize(600, 560);
 
     QString details = QString(
+        "PROPERTY DETAILS\n\n"
         "College: %1\n"
         "Location: %2\n"
         "Type: %3\n"
         "Monthly rent: Rs. %4 per bed\n"
         "Rating: %5 / 5\n"
+        "\nOWNER CONTACT\n\n"
         "%6\n"
         "Email: %7\n\n"
-        "Rooms and residents:\n"
+        "ROOMS AND RESIDENTS\n"
     )
         .arg(toQString(pg.getCollegeName()))
         .arg(toQString(pg.getLocation()))
@@ -69,12 +74,34 @@ PGDetailsDialog::PGDetailsDialog(const PG &pg, QWidget *parent)
     }
 
     auto *layout = new QVBoxLayout(this);
+    layout->setContentsMargins(24, 22, 24, 22);
+    layout->setSpacing(12);
+
+    auto *title = new QLabel(toQString(pg.getPGName()), this);
+    title->setObjectName("dialogTitle");
+    layout->addWidget(title);
+
+    auto *subtitle = new QLabel(
+        QString("%1  |  %2")
+            .arg(toQString(pg.getCollegeName()))
+            .arg(toQString(pg.getLocation())),
+        this
+    );
+    subtitle->setObjectName("pageSubtitle");
+    subtitle->setWordWrap(true);
+    layout->addWidget(subtitle);
+
     auto *text = new QTextEdit(this);
     text->setReadOnly(true);
     text->setPlainText(details);
+    text->setMinimumHeight(300);
     layout->addWidget(text);
 
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Close, this);
+    buttons->button(QDialogButtonBox::Close)->setObjectName("secondaryButton");
+    auto *buttonRow = new QHBoxLayout;
+    buttonRow->addStretch();
+    buttonRow->addWidget(buttons);
+    layout->addLayout(buttonRow);
     connect(buttons, &QDialogButtonBox::rejected, this, &PGDetailsDialog::reject);
-    layout->addWidget(buttons);
 }
