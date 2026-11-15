@@ -14,8 +14,12 @@ add_executable(StayNear
     src/gui/MainWindow.h
     src/gui/dialogs/AddPGDialog.cpp
     src/gui/dialogs/AddPGDialog.h
+    src/gui/dialogs/MysqlLoginDialog.cpp
+    src/gui/dialogs/MysqlLoginDialog.h
     src/gui/dialogs/PGDetailsDialog.cpp
     src/gui/dialogs/PGDetailsDialog.h
+    src/models/Database.cpp
+    src/models/Database.h
     src/models/Owner.cpp
     src/models/Owner.h
     src/models/Person.cpp

@@ -1,0 +1,42 @@
+CREATE DATABASE IF NOT EXISTS staynear
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+
+USE staynear;
+
+CREATE TABLE IF NOT EXISTS owners (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    phone VARCHAR(30) NOT NULL,
+    email VARCHAR(120) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS pgs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(120) NOT NULL,
+    college VARCHAR(160) NOT NULL,
+    location VARCHAR(160) NOT NULL,
+    type VARCHAR(20) NOT NULL,
+    rent INT NOT NULL,
+    rating DECIMAL(2, 1) NOT NULL,
+    owner_id INT NOT NULL,
+    FOREIGN KEY (owner_id) REFERENCES owners(id)
+);
+
+CREATE TABLE IF NOT EXISTS rooms (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    pg_id INT NOT NULL,
+    room_number INT NOT NULL,
+    total_beds INT NOT NULL,
+    FOREIGN KEY (pg_id) REFERENCES pgs(id)
+);
+
+CREATE TABLE IF NOT EXISTS students (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    room_id INT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    phone VARCHAR(30) NOT NULL,
+    course VARCHAR(80) NOT NULL,
+    year INT NOT NULL,
+    FOREIGN KEY (room_id) REFERENCES rooms(id)
+);
