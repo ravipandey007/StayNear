@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <vector>
 
+#include "Database.h"
 #include "PG.h"
 
 class QCheckBox;
@@ -20,6 +21,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
 
 private:
+    void connectToMysql();
     void createLayout();
     void refreshPgs();
     void addPgRow(const PG &pg, int index);
@@ -28,6 +30,8 @@ private:
     void showSelectedPg();
     int selectedPgIndex() const;
 
+    Database database_;
+    bool databaseReady_ = false;
     std::vector<PG> pgs_;
     QLineEdit *searchInput_ = nullptr;
     QComboBox *typeFilter_ = nullptr;

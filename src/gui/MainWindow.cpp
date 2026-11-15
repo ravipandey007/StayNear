@@ -19,6 +19,7 @@
 
 #include "SampleData.h"
 #include "dialogs/AddPGDialog.h"
+#include "dialogs/MysqlLoginDialog.h"
 #include "dialogs/PGDetailsDialog.h"
 
 namespace
@@ -30,13 +31,72 @@ QString toQString(const std::string &value)
 }
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), pgs_(createSamplePgs())
+    : QMainWindow(parent)
 {
     setWindowTitle("StayNear - Student PG Accommodation");
     resize(1240, 760);
     setMinimumSize(900, 600);
+    connectToMysql();
     createLayout();
     refreshPgs();
+}
+
+void MainWindow::connectToMysql()
+{
+    Database::Settings settings = Database::loadSettings();
+    const auto useSampleData = [this](const QString &reason) {
+        pgs_ = createSamplePgs();
+        QMessageBox::warning(
+            this,
+            "MySQL unavailable",
+            reason + "\n\nStayNear will use temporary sample data for this session."
+        );
+    };
+
+    if (!database_.open(settings))
+    {
+        MysqlLoginDialog dialog(settings, this);
+        if (dialog.exec() != QDialog::Accepted)
+        {
+            useSampleData(
+                "Could not connect to MySQL:\n" +
+                QString::fromStdString(database_.lastError())
+            );
+            return;
+        }
+
+        settings = dialog.settings();
+        if (!database_.open(settings))
+        {
+            useSampleData(
+                "Could not connect to MySQL:\n" +
+                QString::fromStdString(database_.lastError())
+            );
+            return;
+        }
+    }
+
+    if (!database_.seedIfEmpty(createSamplePgs()))
+    {
+        useSampleData(
+            "StayNear could not initialize its database:\n" +
+            QString::fromStdString(database_.lastError())
+        );
+        return;
+    }
+
+    pgs_ = database_.loadPgs();
+    if (!database_.lastError().empty())
+    {
+        useSampleData(
+            "StayNear could not load its listings:\n" +
+            QString::fromStdString(database_.lastError())
+        );
+        return;
+    }
+
+    databaseReady_ = true;
+    Database::saveSettings(settings);
 }
 
 void MainWindow::createLayout()
@@ -318,7 +378,19 @@ void MainWindow::addPg()
         return;
     }
 
-    pgs_.push_back(dialog.createPG());
+    const PG pg = dialog.createPG();
+    if (databaseReady_ && !database_.savePg(pg))
+    {
+        QMessageBox::warning(
+            this,
+            "Could not save PG",
+            "The PG was not added because MySQL could not save it:\n" +
+                QString::fromStdString(database_.lastError())
+        );
+        return;
+    }
+
+    pgs_.push_back(pg);
     refreshPgs();
 }
 

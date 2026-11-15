@@ -4,3 +4,4 @@
 *.obj
 .cache/
 CMakeLists.txt.user
+database.ini

@@ -10,7 +10,9 @@ StayNear is a beginner-friendly C++17 project for managing student paying-guest 
 - Register a PG with owner details and room capacities.
 - Inspect rooms, occupancy, and resident student information.
 
-The data is held in memory and resets when the app closes.
+PG listings and their owners, rooms, and students are stored in MySQL so they
+remain available after the app closes. If MySQL is unavailable, the app warns
+you and uses temporary sample data for that session.
 
 ## Project layout
 
@@ -19,18 +21,21 @@ StayNear/
 ├── CMakeLists.txt
 ├── README.md
 ├── build.bat
+├── database.ini.example     # Example local MySQL settings
+├── sql/schema.sql           # MySQL schema (also created automatically)
 ├── src/
-│   ├── models/                 # Data classes and example data
+│   ├── models/                 # Data classes, sample data, and MySQL access
 │   │   ├── Person.h/.cpp       # Shared name and phone
 │   │   ├── Student.h/.cpp      # Student details
 │   │   ├── Owner.h/.cpp        # Owner details
 │   │   ├── Room.h/.cpp         # Beds and students in a room
 │   │   ├── PG.h/.cpp           # PG details and bed totals
-│   │   └── SampleData.h/.cpp   # Example PGs
+│   │   ├── SampleData.h/.cpp   # Example PGs
+│   │   └── Database.h/.cpp     # MySQL connection and queries
 │   └── gui/                    # Qt windows and dialogs
 │       ├── main.cpp            # Starts the app
 │       ├── MainWindow.h/.cpp   # Main PG list and filters
-│       └── dialogs/            # Add PG and view room details
+│       └── dialogs/            # Add PG, MySQL login, and room details
 ```
 
 In VS Code, expand `src` to see the separate `gui` and `models` folders. The registration and room details forms are inside `src/gui/dialogs`. The Explorer keeps folders separate and hides generated build files automatically.
@@ -68,4 +73,16 @@ Install Qt 6 Widgets, CMake, Ninja, and a compatible C++ compiler. On Windows, o
 
 If Qt is not installed in `C:\Qt\6.11.1\mingw_64`, set the `QT_DIR` environment variable to your Qt folder before running `build.bat`.
 
-PGs added while the app is running are kept in memory and are cleared when the app closes.
+## MySQL setup
+
+1. Install and start MySQL Server (8.0 or later). On Windows, StayNear also
+   needs `libmysql.dll`, which is included with the MySQL Server installation.
+2. Optionally copy `database.ini.example` to `database.ini` and enter your
+   connection settings. Otherwise, StayNear asks for them when it starts.
+3. On the first successful connection, StayNear creates the selected database
+   and its tables, then seeds the example PGs only if there are no listings yet.
+
+The app saves connection settings, including the password, in the local
+`database.ini` file. That file is ignored by Git; keep it private. If MySQL is
+unavailable or the login dialog is cancelled, StayNear continues with temporary
+sample data. PGs registered in that offline session are not persisted.
