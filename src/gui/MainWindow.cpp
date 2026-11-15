@@ -3,7 +3,7 @@
 #include <QAbstractItemView>
 #include <QCheckBox>
 #include <QComboBox>
-#include <QFont>
+#include <QFrame>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
@@ -33,7 +33,8 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), pgs_(createSamplePgs())
 {
     setWindowTitle("StayNear - Student PG Accommodation");
-    resize(1100, 700);
+    resize(1240, 760);
+    setMinimumSize(900, 600);
     createLayout();
     refreshPgs();
 }
@@ -41,22 +42,117 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::createLayout()
 {
     auto *centralWidget = new QWidget(this);
+    centralWidget->setStyleSheet(R"(
+        QWidget {
+            background: #f4f7fb;
+            color: #1e293b;
+            font-family: "Segoe UI";
+            font-size: 10pt;
+        }
+        QLabel#pageTitle {
+            color: #0f172a;
+            font-size: 25pt;
+            font-weight: 700;
+        }
+        QLabel#pageSubtitle, QLabel#resultsLabel {
+            color: #64748b;
+        }
+        QLabel#summaryLabel {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px 18px;
+            color: #334155;
+            font-size: 11pt;
+            font-weight: 600;
+        }
+        QFrame#filtersCard {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+        }
+        QLineEdit, QComboBox, QSpinBox {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            padding: 8px;
+            min-height: 20px;
+            selection-background-color: #bfdbfe;
+        }
+        QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
+            border: 1px solid #3b82f6;
+        }
+        QCheckBox {
+            spacing: 8px;
+        }
+        QPushButton {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            padding: 9px 16px;
+            font-weight: 600;
+        }
+        QPushButton:hover {
+            background: #eff6ff;
+            border-color: #93c5fd;
+        }
+        QPushButton#primaryButton {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: #ffffff;
+        }
+        QPushButton#primaryButton:hover {
+            background: #1d4ed8;
+            border-color: #1d4ed8;
+        }
+        QTableWidget {
+            background: #ffffff;
+            alternate-background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            gridline-color: #eef2f7;
+            selection-background-color: #dbeafe;
+            selection-color: #1e3a8a;
+            outline: 0;
+        }
+        QHeaderView::section {
+            background: #f1f5f9;
+            border: none;
+            border-bottom: 1px solid #e2e8f0;
+            color: #475569;
+            font-weight: 600;
+            padding: 10px 8px;
+        }
+        QTableWidget::item {
+            border-bottom: 1px solid #f1f5f9;
+            padding: 6px;
+        }
+    )");
+
     auto *layout = new QVBoxLayout(centralWidget);
+    layout->setContentsMargins(26, 22, 26, 22);
+    layout->setSpacing(14);
 
     auto *title = new QLabel("StayNear - Student PG Accommodation");
-    QFont titleFont = title->font();
-    titleFont.setPointSize(titleFont.pointSize() + 5);
-    titleFont.setBold(true);
-    title->setFont(titleFont);
+    title->setObjectName("pageTitle");
     layout->addWidget(title);
-    layout->addWidget(new QLabel(
+
+    auto *subtitle = new QLabel(
         "Browse PGs near GEHU and BIAS in Bhimtal, or register a new PG."
-    ));
+    );
+    subtitle->setObjectName("pageSubtitle");
+    layout->addWidget(subtitle);
 
     summaryLabel_ = new QLabel;
+    summaryLabel_->setObjectName("summaryLabel");
     layout->addWidget(summaryLabel_);
 
-    auto *filters = new QHBoxLayout;
+    auto *filtersCard = new QFrame;
+    filtersCard->setObjectName("filtersCard");
+    auto *filters = new QHBoxLayout(filtersCard);
+    filters->setContentsMargins(14, 12, 14, 12);
+    filters->setSpacing(10);
+
     searchInput_ = new QLineEdit;
     searchInput_->setPlaceholderText("Search PG, college, or location");
     filters->addWidget(searchInput_, 1);
@@ -73,7 +169,7 @@ void MainWindow::createLayout()
 
     availableFilter_ = new QCheckBox("Available beds only");
     filters->addWidget(availableFilter_);
-    layout->addLayout(filters);
+    layout->addWidget(filtersCard);
 
     pgTable_ = new QTableWidget(0, 8);
     pgTable_->setHorizontalHeaderLabels({
@@ -84,17 +180,22 @@ void MainWindow::createLayout()
     pgTable_->setSelectionMode(QAbstractItemView::SingleSelection);
     pgTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     pgTable_->setAlternatingRowColors(true);
+    pgTable_->setShowGrid(false);
+    pgTable_->verticalHeader()->setDefaultSectionSize(42);
     pgTable_->verticalHeader()->hide();
+    pgTable_->horizontalHeader()->setMinimumHeight(42);
     pgTable_->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     pgTable_->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     layout->addWidget(pgTable_, 1);
 
     auto *buttons = new QHBoxLayout;
     resultsLabel_ = new QLabel;
+    resultsLabel_->setObjectName("resultsLabel");
     buttons->addWidget(resultsLabel_);
     buttons->addStretch();
 
     auto *addButton = new QPushButton("Register PG");
+    addButton->setObjectName("primaryButton");
     auto *detailsButton = new QPushButton("View rooms");
     buttons->addWidget(addButton);
     buttons->addWidget(detailsButton);
@@ -141,9 +242,9 @@ void MainWindow::refreshPgs()
         ++visibleCount;
     }
 
-    resultsLabel_->setText(
-        QString("Showing %1 of %2 PGs").arg(visibleCount).arg(pgs_.size())
-    );
+    resultsLabel_->setText(visibleCount == 0
+        ? QStringLiteral("No PGs match these filters")
+        : QString("Showing %1 of %2 PGs").arg(visibleCount).arg(pgs_.size()));
     updateSummary();
 }
 
